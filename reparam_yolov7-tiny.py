@@ -17,7 +17,7 @@ args = argparse.parse_args()
 
 device = select_device('0', batch_size=1)
 # model trained by cfg/training/*.yaml
-ckpt = torch.load(args.weights, map_location=device)
+ckpt = torch.load(args.weights, map_location=device, weights_only=False)
 # reparameterized model in cfg/deploy/*.yaml
 model = Model(args.custom_yaml, ch=3, nc=ckpt['model'].nc).to(device)
 
