@@ -1,52 +1,62 @@
+# YAMLModifier - YOLOv7 YAML Configuration File Modifier Tool
 # YAMLModifier - YOLOv7 YAML配置修改工具
 
-## 功能说明
-这是一个用于YOLOv7配置文件的YAML修改工具，可以：
-- 📖 读取YAML配置文件
-- ✏️ 修改`nc`（类别数）参数
-- 💾 保存到指定位置
+## Features / 功能說明
 
-## 安装依赖
+This is a YAML modification tool for YOLOv7 configuration files that can:
+這是一個用於YOLOv7配置檔案的YAML修改工具，可以：
+
+- 📖 Read YAML configuration files / 讀取YAML配置檔案
+- ✏️ Modify `nc` (number of classes) parameter / 修改`nc`（類別數）參數
+- 💾 Save to specified location / 保存到指定位置
+
+## Installation / 安裝依賴
+
 ```bash
 pip install pyyaml
 ```
 
-## 使用方法
+## Usage / 使用方法
 
-### 1. 命令行使用
+### 1. Command Line Usage / 命令列使用
 
-#### 基础用法 - 修改并覆盖原文件
+#### Basic Usage - Modify and Overwrite Original File / 基礎用法 - 修改並覆蓋原檔案
+
 ```bash
 python yaml_modifier.py -i cfg/training/yolov7-tiny.yaml -nc 10
 ```
 
-#### 修改并保存到新位置
+#### Modify and Save to New Location / 修改並保存到新位置
+
 ```bash
 python yaml_modifier.py -i cfg/training/yolov7-tiny.yaml -o cfg/training/yolov7-tiny-custom.yaml -nc 5
 ```
 
-#### 仅查看当前nc值（不修改）
+#### View Current nc Value Only (No Modification) / 僅查看當前nc值（不修改）
+
 ```bash
 python yaml_modifier.py -i cfg/training/yolov7-tiny.yaml --get-nc
 ```
 
-### 2. 在Python代码中使用
+### 2. Using in Python Code / 在Python代碼中使用
 
-#### 方法1: 完整处理流程
+#### Method 1: Complete Processing Workflow / 方法1: 完整處理流程
+
 ```python
 from yaml_modifier import YAMLModifier
 
-# 创建修改器实例
+# Create modifier instance / 創建修改器實例
 modifier = YAMLModifier(
     input_path='cfg/training/yolov7-tiny.yaml',
     output_path='cfg/training/yolov7-tiny-custom.yaml'
 )
 
-# 一次性完成：读取 -> 修改 -> 保存
+# Complete in one step: Read -> Modify -> Save / 一次性完成：讀取 -> 修改 -> 保存
 modifier.process(new_nc=10)
 ```
 
-#### 方法2: 逐步操作
+#### Method 2: Step-by-Step Operation / 方法2: 逐步操作
+
 ```python
 from yaml_modifier import YAMLModifier
 
@@ -55,30 +65,32 @@ modifier = YAMLModifier(
     output_path='cfg/training/yolov7-tiny-custom.yaml'
 )
 
-# Step 1: 读取文件
+# Step 1: Read file / 第1步：讀取檔案
 config = modifier.read_yaml()
 
-# Step 2: 查看当前nc值
+# Step 2: View current nc value / 第2步：查看當前nc值
 current_nc = modifier.get_nc()
-print(f"当前nc值: {current_nc}")
+print(f"Current nc value / 當前nc值: {current_nc}")
 
-# Step 3: 修改nc值
+# Step 3: Modify nc value / 第3步：修改nc值
 modifier.modify_nc(new_nc=10)
 
-# Step 4: 保存文件
+# Step 4: Save file / 第4步：保存檔案
 modifier.save_yaml()
 ```
 
-#### 方法3: 覆盖原文件
+#### Method 3: Overwrite Original File / 方法3: 覆蓋原檔案
+
 ```python
 from yaml_modifier import YAMLModifier
 
-# 不指定output_path则覆盖原文件
+# Do not specify output_path to overwrite original file / 不指定output_path則覆蓋原檔案
 modifier = YAMLModifier(input_path='cfg/training/yolov7-tiny.yaml')
 modifier.process(new_nc=15)
 ```
 
-#### 方法4: 批量修改
+#### Method 4: Batch Modification / 方法4: 批量修改
+
 ```python
 from yaml_modifier import YAMLModifier
 
@@ -95,84 +107,118 @@ for input_file, nc_value in config_files:
         modifier.process(new_nc=nc_value)
         print(f"✓ {input_file} -> {output_file}")
     except Exception as e:
-        print(f"✗ 处理失败: {e}")
+        print(f"✗ Processing failed / 處理失敗: {e}")
 ```
 
-## API 文档
+## API Documentation / API 文檔
 
-### YAMLModifier 类
+### YAMLModifier Class / YAMLModifier 類
 
-#### 初始化
+#### Initialization / 初始化
+
 ```python
 YAMLModifier(input_path: str, output_path: Optional[str] = None)
 ```
-- `input_path`: 输入YAML文件路径（必需）
-- `output_path`: 输出YAML文件路径（可选，默认覆盖原文件）
 
-#### 方法
+- `input_path`: Path to input YAML file (required) / 輸入YAML檔案路徑（必需）
+- `output_path`: Path to output YAML file (optional, default overwrites original file) / 輸出YAML檔案路徑（可選，預設覆蓋原檔案）
+
+#### Methods / 方法
 
 ##### read_yaml()
-读取YAML文件
+
+Read YAML file / 讀取YAML檔案
+
 ```python
 config = modifier.read_yaml()
-# 返回: dict 类型的配置字典
+# Returns / 返回: dict type configuration dictionary / dict 類型的配置字典
 ```
 
 ##### modify_nc(new_nc: int)
-修改nc参数
+
+Modify nc parameter / 修改nc參數
+
 ```python
 modifier.modify_nc(new_nc=10)
-# 返回: True（成功）
+# Returns / 返回: True (success) / True（成功）
 ```
 
 ##### save_yaml()
-保存修改后的YAML文件
+
+Save modified YAML file / 保存修改後的YAML檔案
+
 ```python
 modifier.save_yaml()
 ```
 
 ##### get_nc()
-获取当前的nc值
+
+Get current nc value / 獲取當前的nc值
+
 ```python
 current_nc = modifier.get_nc()
-# 返回: int 类型的类别数
+# Returns / 返回: int type number of classes / int 類型的類別數
 ```
 
 ##### process(new_nc: int)
-完整的处理流程（读取 -> 修改 -> 保存）
+
+Complete processing workflow (Read -> Modify -> Save) / 完整的處理流程（讀取 -> 修改 -> 保存）
+
 ```python
 modifier.process(new_nc=10)
 ```
 
-## 示例脚本
+## Example Scripts / 範例腳本
 
-查看 `yaml_modifier_examples.py` 获取更多使用示例。
+See `yaml_modifier_examples.py` for more usage examples. / 查看 `yaml_modifier_examples.py` 獲取更多使用範例。
 
-## 错误处理
+## Error Handling / 錯誤處理
 
-工具包含详细的错误处理：
-- ✓ 文件不存在检查
-- ✓ YAML解析错误捕获
-- ✓ nc参数验证
-- ✓ 目录自动创建
+The tool includes detailed error handling: / 工具包含詳細的錯誤處理：
 
-## 常见问题
+- ✓ File existence check / 檔案存在檢查
+- ✓ YAML parsing error capture / YAML解析錯誤捕獲
+- ✓ nc parameter validation / nc參數驗證
+- ✓ Automatic directory creation / 目錄自動創建
 
-**Q: 可以修改其他参数吗？**
-A: 目前工具专注于修改`nc`参数。如需修改其他参数，可以继承`YAMLModifier`类或修改源代码。
+## FAQ / 常見問題
 
-**Q: 是否支持注释保留？**
-A: PyYAML会移除注释。如需保留注释，需要使用其他库如`ruamel.yaml`。
+### Q: Can I modify other parameters? / Q: 可以修改其他參數嗎？
 
-**Q: 如何恢复原文件？**
-A: 确保使用`output_path`参数将结果保存到新文件，而不是覆盖原文件。
+**A:** The tool currently focuses on modifying the `nc` parameter. If you need to modify other parameters, you can inherit the `YAMLModifier` class or modify the source code.
 
-## 许可证
+**A:** 目前工具專注於修改`nc`參數。如需修改其他參數，可以繼承`YAMLModifier`類或修改原始碼。
+
+### Q: Does it support comment preservation? / Q: 是否支持註解保留？
+
+**A:** PyYAML removes comments. If you need to preserve comments, you need to use other libraries like `ruamel.yaml`.
+
+**A:** PyYAML會移除註解。如需保留註解，需要使用其他庫如`ruamel.yaml`。
+
+### Q: How to restore the original file? / Q: 如何恢復原檔案？
+
+**A:** Make sure to use the `output_path` parameter to save the result to a new file instead of overwriting the original file.
+
+**A:** 確保使用`output_path`參數將結果保存到新檔案，而不是覆蓋原檔案。
+
+### Q: What Python versions are supported? / Q: 支持哪些Python版本？
+
+**A:** The tool is compatible with Python 3.6 and higher. It uses standard library modules (argparse, pathlib) and PyYAML.
+
+**A:** 工具與Python 3.6及更高版本相容。它使用標準庫模組（argparse、pathlib）和PyYAML。
+
+## License / 許可證
+
 MIT License
 
-## 作者
-YOLOv7 工具集
+## Author / 作者
+
+YOLOv7 Toolset / YOLOv7 工具集
 
 ---
 
-**提示**: 在批量修改前，建议先用单个文件测试工具的功能。
+## Notes / 提示
+
+**Before batch modification, it is recommended to test the tool's functionality with a single file first.**
+
+**在批量修改前，建議先用單個檔案測試工具的功能。**
