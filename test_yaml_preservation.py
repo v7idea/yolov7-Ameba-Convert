@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
 """
-Test script to verify YAML file preservation
-測試腳本以驗證YAML檔案保留
-
-This script tests whether comments and formatting are preserved when modifying nc value.
-此腳本測試在修改nc值時是否保留了註解和格式。
+Test script to validate that YAML modification preserves all comments and structure
+測試腳本以驗證YAML修改是否保留所有註解和結構
 """
 
-from yaml_modifier import YAMLModifier
 import tempfile
+import os
 from pathlib import Path
+from yaml_modifier import YAMLModifier
 
 
 def test_yaml_preservation():
@@ -18,7 +16,7 @@ def test_yaml_preservation():
     測試YAML註解和結構是否被保留
     """
     
-    # Create a test YAML content with comments and structure
+    # Create a test YAML content with comments and structure - Full example
     test_yaml_content = """# parameters
 nc: 80  # number of classes
 depth_multiple: 1.0  # model depth multiple
@@ -32,22 +30,40 @@ anchors:
 
 # yolov7-tiny backbone
 backbone:
-  # [from, number, module, args]
   [[-1, 1, Conv, [32, 3, 2, None, 1, nn.LeakyReLU(0.1)]],  # 0-P1/2
    [-1, 1, Conv, [64, 3, 2, None, 1, nn.LeakyReLU(0.1)]],  # 1-P2/4
-   [-1, 1, Conv, [32, 1, 1, None, 1, nn.LeakyReLU(0.1)]]]
+   [-1, 1, MaxPool, [2, 2]],  # 2
+   [-1, 2, Conv, [64, 3, 1]]]  # 3
 
 # yolov7-tiny head
 head:
-  [[-1, 1, Conv, [256, 1, 1, None, 1, nn.LeakyReLU(0.1)]],
-   [-2, 1, Conv, [256, 1, 1, None, 1, nn.LeakyReLU(0.1)]],
-   [[1, 2], 1, Detect, [nc, anchors]]]
+  [[-1, 1, Conv, [128, 3, 1]],  # 0
+   [-1, 1, Conv, [256, 3, 2]],  # 1
+   [[-1, -2], 1, Concat, [1]],  # 2
+   [-1, 3, C3, [256]],  # 3
+   [-1, 1, Conv, [512, 3, 2]],  # 4
+   [[-1, -4], 1, Concat, [1]],  # 5
+   [-1, 3, C3, [512]],  # 6
+   [-1, -2, nn.Upsample, [None, 2, 'nearest']],  # 7
+   [[-1, 3], 1, Concat, [1]],  # 8
+   [-1, 3, C3, [256]],  # 9
+   [-1, -2, nn.Upsample, [None, 2, 'nearest']],  # 10
+   [[-1, 1], 1, Concat, [1]],  # 11
+   [-1, 3, C3, [128]],  # 12
+   [-1, 2, MP, []],  # 13
+   [-1, 1, Conv, [128, 3, 2]],  # 14
+   [[-1, 9], 1, Concat, [1]],  # 15
+   [-1, 3, C3, [256]],  # 16
+   [-1, 2, MP, []],  # 17
+   [-1, 1, Conv, [256, 3, 2]],  # 18
+   [[-1, 6], 1, Concat, [1]],  # 19
+   [-1, 3, C3, [512]],  # 20
+   [[12, 16, 20], 1, Detect, [nc, anchors]]]  # 21
 """
     
-    print("=" * 70)
-    print("YAML File Preservation Test")
-    print("YAML檔案保留測試")
-    print("=" * 70)
+    print("=" * 80)
+    print("YAML File Preservation Test / YAML檔案保留測試")
+    print("=" * 80)
     
     # Create temporary files
     with tempfile.TemporaryDirectory() as tmpdir:

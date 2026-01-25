@@ -6,11 +6,11 @@ YOLOv7 YAML 配置檔案修改工具
 Used to read, modify and save the nc (number of classes) parameter in YAML configuration files.
 用於讀取、修改和保存YAML配置檔案中的nc（類別數）參數
 
-This version uses ruamel.yaml to preserve comments and formatting.
-此版本使用ruamel.yaml以保留註解和格式。
+This version uses text-based replacement to preserve all comments and formatting.
+此版本使用基於文字的替換以保留所有註解和格式。
 """
 
-from ruamel.yaml import YAML
+import re
 import argparse
 from pathlib import Path
 from typing import Optional
@@ -30,10 +30,8 @@ class YAMLModifier:
         """
         self.input_path = Path(input_path)
         self.output_path = Path(output_path) if output_path else self.input_path
-        self.config = None
-        self.yaml = YAML()
-        self.yaml.preserve_quotes = True
-        self.yaml.default_flow_style = False
+        self.file_content = None
+        self.current_nc = None
         
         # Verify input file exists / 驗證輸入檔案存在
         if not self.input_path.exists():
@@ -41,16 +39,27 @@ class YAMLModifier:
     
     def read_yaml(self) -> dict:
         """
-        Read YAML file / 讀取YAML檔案
+        Read YAML file and extract nc value / 讀取YAML檔案並提取nc值
         
         Returns:
-            dict: Dictionary containing YAML file content / YAML檔案內容的字典
+            dict: Dictionary with 'nc' key containing the value / 包含'nc'鍵的字典
         """
         try:
             with open(self.input_path, 'r', encoding='utf-8') as f:
-                self.config = self.yaml.load(f)
-            print(f"✓ Successfully read YAML file / 成功讀取YAML檔案: {self.input_path}")
-            return self.config
+                self.file_content = f.read()
+            
+            # Extract nc value using regex / 使用正則表達式提取nc值
+            # Matches: nc: 80 or nc:80 (with optional whitespace)
+            match = re.search(r'^\s*nc\s*:\s*(\d+)', self.file_content, re.MULTILINE)
+            
+            if match:
+                self.current_nc = int(match.group(1))
+                print(f"✓ Successfully read YAML file / 成功讀取YAML檔案: {self.input_path}")
+                print(f"  Current nc value / 當前nc值: {self.current_nc}")
+                return {'nc': self.current_nc}
+            else:
+                raise ValueError("'nc' parameter not found in YAML file / YAML檔案中找不到'nc'參數")
+                
         except Exception as e:
             raise Exception(f"Failed to read file / 讀取檔案失敗: {e}")
     
@@ -64,22 +73,31 @@ class YAMLModifier:
         Returns:
             bool: Whether modification was successful / 是否修改成功
         """
-        if self.config is None:
+        if self.file_content is None:
             raise RuntimeError("Please call read_yaml() method first to read the file / 請先呼叫read_yaml()方法讀取檔案")
         
-        if 'nc' not in self.config:
-            raise KeyError("'nc' parameter does not exist in YAML file / YAML檔案中不存在'nc'參數")
+        if self.current_nc is None:
+            raise ValueError("'nc' parameter not found in YAML file / YAML檔案中找不到'nc'參數")
         
-        old_nc = self.config['nc']
-        self.config['nc'] = new_nc
-        print(f"✓ Modified nc parameter / 已修改nc參數: {old_nc} -> {new_nc}")
+        # Replace nc value using regex while preserving everything else
+        # 使用正則表達式替換nc值，同時保留其他所有內容
+        # Pattern: nc: <number> or nc:<number> (preserves spacing and comments)
+        self.file_content = re.sub(
+            r'(^\s*nc\s*:\s*)(\d+)',
+            rf'\g<1>{new_nc}',
+            self.file_content,
+            count=1,
+            flags=re.MULTILINE
+        )
+        
+        print(f"✓ Modified nc parameter / 已修改nc參數: {self.current_nc} -> {new_nc}")
         return True
     
     def save_yaml(self) -> None:
         """
         Save modified YAML file / 保存修改後的YAML檔案
         """
-        if self.config is None:
+        if self.file_content is None:
             raise RuntimeError("No configuration data to save, please call read_yaml() method first / 沒有可保存的組態資料，請先呼叫read_yaml()方法")
         
         try:
@@ -87,7 +105,7 @@ class YAMLModifier:
             self.output_path.parent.mkdir(parents=True, exist_ok=True)
             
             with open(self.output_path, 'w', encoding='utf-8') as f:
-                self.yaml.dump(self.config, f)
+                f.write(self.file_content)
             print(f"✓ Successfully saved YAML file / 成功保存YAML檔案: {self.output_path}")
         except Exception as e:
             raise Exception(f"Failed to save file / 保存檔案失敗: {e}")
@@ -99,9 +117,9 @@ class YAMLModifier:
         Returns:
             int: Number of classes / 類別數
         """
-        if self.config is None:
+        if self.current_nc is None:
             raise RuntimeError("Please call read_yaml() method first to read the file / 請先呼叫read_yaml()方法讀取檔案")
-        return self.config.get('nc', None)
+        return self.current_nc
     
     def process(self, new_nc: int) -> None:
         """
