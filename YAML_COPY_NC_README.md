@@ -20,9 +20,13 @@ The **YAML NC Value Copier** tool reads the `nc` (number of classes) parameter f
 ## Prerequisites / 前置條件
 
 ```bash
-# Install required package / 安裝所需的套件
-pip install pyyaml
+# Install required packages / 安裝所需的套件
+pip install pyyaml ruamel.yaml
 ```
+
+**Note / 注意:**
+- `ruamel.yaml`: Preserves comments and formatting / 保留註解和格式
+- `pyyaml`: Fallback for basic YAML operations / YAML基本操作的備用庫
 
 ---
 

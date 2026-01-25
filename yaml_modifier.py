@@ -5,9 +5,12 @@ YOLOv7 YAML 配置檔案修改工具
 
 Used to read, modify and save the nc (number of classes) parameter in YAML configuration files.
 用於讀取、修改和保存YAML配置檔案中的nc（類別數）參數
+
+This version uses ruamel.yaml to preserve comments and formatting.
+此版本使用ruamel.yaml以保留註解和格式。
 """
 
-import yaml
+from ruamel.yaml import YAML
 import argparse
 from pathlib import Path
 from typing import Optional
@@ -28,6 +31,9 @@ class YAMLModifier:
         self.input_path = Path(input_path)
         self.output_path = Path(output_path) if output_path else self.input_path
         self.config = None
+        self.yaml = YAML()
+        self.yaml.preserve_quotes = True
+        self.yaml.default_flow_style = False
         
         # Verify input file exists / 驗證輸入檔案存在
         if not self.input_path.exists():
@@ -42,11 +48,9 @@ class YAMLModifier:
         """
         try:
             with open(self.input_path, 'r', encoding='utf-8') as f:
-                self.config = yaml.safe_load(f)
+                self.config = self.yaml.load(f)
             print(f"✓ Successfully read YAML file / 成功讀取YAML檔案: {self.input_path}")
             return self.config
-        except yaml.YAMLError as e:
-            raise ValueError(f"YAML parsing error / YAML解析錯誤: {e}")
         except Exception as e:
             raise Exception(f"Failed to read file / 讀取檔案失敗: {e}")
     
@@ -83,7 +87,7 @@ class YAMLModifier:
             self.output_path.parent.mkdir(parents=True, exist_ok=True)
             
             with open(self.output_path, 'w', encoding='utf-8') as f:
-                yaml.dump(self.config, f, allow_unicode=True, default_flow_style=False, sort_keys=False)
+                self.yaml.dump(self.config, f)
             print(f"✓ Successfully saved YAML file / 成功保存YAML檔案: {self.output_path}")
         except Exception as e:
             raise Exception(f"Failed to save file / 保存檔案失敗: {e}")

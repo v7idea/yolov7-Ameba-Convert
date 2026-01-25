@@ -6,6 +6,9 @@ YAML NC值複製和修改工具
 This script reads the nc value from one YAML file and copies it to another YAML file.
 此腳本從一個YAML檔案讀取nc值並將其複製到另一個YAML檔案。
 
+Note: Uses ruamel.yaml to preserve all comments and formatting in YAML files.
+注意：使用ruamel.yaml以保留YAML檔案中的所有註解和格式。
+
 Usage: python yaml_copy_nc.py --data-yaml source.yaml --target-yaml target.yaml --output-yaml output.yaml
 使用方法: python yaml_copy_nc.py --data-yaml source.yaml --target-yaml target.yaml --output-yaml output.yaml
 """
