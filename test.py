@@ -245,6 +245,19 @@ def test(data,
     # Plots
     if plots:
         confusion_matrix.plot(save_dir=save_dir, names=list(names.values()))
+        matrix_labels = list(names.values()) + ['background']
+        confusion_payload = {
+            'schemaVersion': 1,
+            'type': 'prediction-confusion-matrix',
+            'taskType': 'object-detection',
+            'labels': matrix_labels,
+            'matrix': confusion_matrix.matrix.astype(int).tolist(),
+            'source': 'yolov7.utils.metrics.ConfusionMatrix',
+            'description': 'YOLOv7 prediction-based validation confusion matrix. Labels include a trailing background class.',
+        }
+        with open(Path(save_dir) / 'confusion_matrix.json', 'w', encoding='utf-8') as f:
+            json.dump(confusion_payload, f, ensure_ascii=False, indent=2)
+            f.write('\n')
         if wandb_logger and wandb_logger.wandb:
             val_batches = [wandb_logger.wandb.Image(str(f), caption=f.name) for f in sorted(save_dir.glob('test*.jpg'))]
             wandb_logger.log({"Validation": val_batches})
